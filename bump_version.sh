@@ -4,12 +4,30 @@
 # This is designed to run in the CircleCI environment and expects CIRCLE_* environment
 # variables to be present
 #
+function beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
+function checkresult() { if [ $? = 0 ]; then echo TRUE; else echo FALSE; fi; }
 
 function tag_pr() {
+    tag_prefix="pr-"
+
     # Grab our PR number
     pr=$(echo $CIRCLE_PULL_REQUEST | awk -F/ '{ print $7 }')
 
-    new="pr-$pr"
+    # get latest tag
+    t=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+    #(>&2 echo "tag_pr t: $t")
+    #(>&2 echo "tar_pr pr: $pr")
+    #(>&2 echo "tar_pr prefix: $tag_prefix")
+
+    if [[ $t == $tag_prefix* ]]; then
+        # We already have a tag for this PR, so we increment
+        num=$(echo $t | sed 's/.*\([0-9][0-9]*\)$/\1/')
+        num=$((num+1))
+        new="pr-$pr-$num"
+    else
+        new="pr-$pr-1"
+    fi
     echo $new
 }
 
@@ -46,10 +64,10 @@ function post() {
     curl -s -X POST https://api.github.com/repos/$REPO_OWNER/$repo/git/refs \
     -H "Authorization: token $GITHUB_TOKEN" \
     -d @- << EOF
-    {
+{
     "ref": "refs/tags/$1",
     "sha": "$commit"
-    }
+}
 EOF
 
 }
@@ -75,6 +93,6 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then
         new=$(tag_pr)
     fi
 
-    echo "new version: $new"
+    echo "new tag: $new"
     post $new
 fi
