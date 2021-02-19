@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Automatically add JIRA issue ID to the git commit message
+
+# Supported project keys
+PROJECT_KEYS=(REM DTX)
+
+# Commit message separator between issue number and commit message
+COMMIT_MESSAGE_SEPARATOR=": "
+
+# Get current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+if [ "$?" -gt "0" ]; then
+  exit 0
+fi
+
+# Get file with current commit message
+COMMIT_MESSAGE_FILE=$1
+if [ "$#" -ne "1" ] || [ ! -f "$COMMIT_MESSAGE_FILE" ]; then
+  exit 1
+fi
+
+# Iterate over project key until it is found, break the loop afterwards
+for PROJECT in "${PROJECT_KEYS[@]}"; do
+  # Check if commit message contains project key
+  # for example:
+  #  "feature/REM-1344" -> does REM-1344 contains project key?
+  echo $BRANCH | grep "$PROJECT-[0-9]*" --only --silent
+  if [ "$?" -eq "0" ]; then
+    # Extract issue id from branch name
+    ISSUE="$(echo $BRANCH | grep "$PROJECT-[0-9]*" --only)"
+    head -1 $COMMIT_MESSAGE_FILE | grep --silent --ignore-case ^${ISSUE}
+    # Does it start with a task number corresponding to the branch name? (case insensitive)
+    if [ "$?" -eq "0" ]; then
+      # Yes, but is it uppercase?
+      head -1 $COMMIT_MESSAGE_FILE | grep --silent ^${ISSUE}
+      if [ "$?" -ne "0" ]; then
+        sed -i.bak "1s/^[a-Z]*/\U&\E/" $COMMIT_MESSAGE_FILE && rm $COMMIT_MESSAGE_FILE.bak
+      fi
+    else
+      # No, so insert issue id
+      sed -i.bak "1s/^/${ISSUE}${COMMIT_MESSAGE_SEPARATOR}/" $COMMIT_MESSAGE_FILE && rm $COMMIT_MESSAGE_FILE.bak
+    fi
+    break
+  fi
+done
