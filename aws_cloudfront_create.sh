@@ -5,11 +5,14 @@ if [ "x$BUCKET" = "x" ]; then
     exit -1
 fi
 
+echo "CloudFront setup for $BUCKET"
+
 sed -e "s/{{BUCKET}}/$BUCKET/g" aws-cloudfront-create.json > cloudfront.json
 
 aws cloudfront create-distribution --distribution-config file://cloudfront.json > cloudfront.out 2>&1
 r=$?
 
+echo "result \$r: $r"
 grep 'Already exists' cloudfront.out > /dev/null
 
 if [[ $? -eq 0 && $r -eq 254 ]]; then
