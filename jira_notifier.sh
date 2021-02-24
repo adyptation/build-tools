@@ -15,7 +15,7 @@ ISSUE=$(echo $BRANCH | egrep -o "([A-Za-z]{1,3}-[0-9]{1,6})")
 
 if [ "x$ISSUE" = "x" ]; then
     echo "Unable to parse issue from branch \"$BRANCH\". Exiting..."
-    exit -1
+    exit 0 # Clean exit so build doesn't break.
 fi
 
 DATA="{ \"issue\": \"$ISSUE\", \"comment\": \"Preview available at: $URL \" }"
