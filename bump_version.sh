@@ -81,6 +81,10 @@ release=0
 # get current branch
 branch=$(git rev-parse --abbrev-ref HEAD)
 
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+git config user.email "admin@adyptation.com"
+git config user.name "CircleCI Builder"
+
 # Make sure we are fully up to date with any recent tags/commits during build.
 git checkout $branch
 git pull origin $branch
@@ -97,9 +101,6 @@ fi
 if [ ! -d $HOME/.ssh ]; then
     mkdir $HOME/.ssh
 fi
-ssh-keyscan github.com >> ~/.ssh/known_hosts
-git config user.email "admin@adyptation.com"
-git config user.name "CircleCI Builder"
 
 if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
