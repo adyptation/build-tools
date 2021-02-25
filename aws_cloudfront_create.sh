@@ -14,14 +14,17 @@ r=$?
 
 echo "result \$r: $r"
 grep 'Already exists' cloudfront.out > /dev/null
+r2=$?
+echo "result2 \$r2: $r2"
 
-if [[ $? -eq 0 && $r -eq 254 ]]; then
-    aws cloudfront list-distributions | jq ".DistributionList.Items[] | select (.Origins.Items[].Id | contains(\"$BUCKET\")) | .DomainName" | sed 's/"//g' > url.out
+if [[ $r2 -eq 0 && $r -eq 254 ]]; then
+    aws cloudfront list-distributions | jq -r ".DistributionList.Items[] | select (.Origins.Items[].Id | contains(\"$BUCKET\")) | .DomainName"
+    aws cloudfront list-distributions | jq -r ".DistributionList.Items[] | select (.Origins.Items[].Id | contains(\"$BUCKET\")) | .DomainName" > url.out
     echo "Distribution already exists ($(cat url.out)). Continuing..."
     exit 0
 fi
 
-jq .Distribution.DomainName cloudfront.out | sed 's/\"//g' > url.out
+jq -r .Distribution.DomainName cloudfront.out > url.out
 
 echo "Exiting ($(cat url.out))."
 exit $r

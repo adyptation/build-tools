@@ -13,7 +13,7 @@ aws cloudfront list-distributions | \
     > cf-list.json
 
 # Setup our ID for later use
-ID=$(jq .Id cf-list.json | sed 's/"//g')
+ID=$(jq -r .Id cf-list.json)
 
 if [ -z $ID ]; then
     echo "No CloudFront Distribution found."
@@ -23,7 +23,7 @@ fi
 aws cloudfront get-distribution-config --id $ID > cf-distribution.json
 
 # We need the ETag in order to delete the distribution
-ETAG=$(jq .ETag cf-distribution.json | sed 's/"//g')
+ETAG=$(jq -r .ETag cf-distribution.json)
 
 echo $ETAG
 exit
@@ -40,12 +40,12 @@ aws cloudfront update-distribution --id $ID --distribution-config file://cf-disa
 while [ 1 ]; do
     sleep 5
 
-    STATUS=$(aws cloudfront get-distribution --id $ID | jq .Distribution.Status | sed 's/"//g')
+    STATUS=$(aws cloudfront get-distribution --id $ID | jq -r .Distribution.Status)
 
     if [ $STATUS = "Deployed" ]; then
         # Finally we can delete the distribution
         echo "Deleting CloudFront Distribution $ID with ETag $ETAG"
-        ETAG=$(aws cloudfront get-distribution --id $ID | jq .ETag | sed 's/"//g')
+        ETAG=$(aws cloudfront get-distribution --id $ID | jq -r .ETag)
         aws cloudfront delete-distribution --id $ID --if-match $ETAG
         exit
     fi

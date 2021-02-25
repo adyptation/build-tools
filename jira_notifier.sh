@@ -25,4 +25,4 @@ echo $DATA
 response=$(curl -s -X POST -H "Content-Type: application/json" --data "$DATA" $FORGE_URL)
 
 echo $response | jq .status | sed 's/^/Status: /'
-echo $response | jq .body | sed 's/"//g' | sed 's/^/Response: /'
+echo $response | jq -r .body | sed 's/^/Response: /'
