@@ -41,10 +41,14 @@ function tag_pr() {
 
 function tag_release() {
     # get current release version
-    t=$(jq -r .version package.json)
+    if [ -f package.json ]; then
+        t=$(jq -r .version package.json)
+    else
+        t="0.1.0" # Update to match other project needs.
+    fi
 
-    if [ ! -z CIRCLE_BUILD_NUM ]; then
-        new="$(semver get major $t).$(semver get minor $t).$CIRCLE_BUILD_NUM"
+    if [ ! -z $CIRCLE_BUILD_NUM ]; then
+        new="$(./semver get major $t).$(./semver get minor $t).$CIRCLE_BUILD_NUM"
     else 
         # get commit logs and determine how to bump the version
         # supports #major, #minor, #patch (anything else will be 'minor')
