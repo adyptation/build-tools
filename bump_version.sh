@@ -98,6 +98,9 @@ if [ ! -f "semver" ]; then
     chmod +x semver
 fi
 
+if [ ! -d $HOME/.ssh ]; then
+    mkdir $HOME/.ssh
+fi
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 git config user.email "admin@adyptation.com"
 git config user.name "CircleCI Builder"
