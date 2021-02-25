@@ -106,7 +106,9 @@ else
     if [ $branch == "master" -o $branch == "main" ]; then
         new=$(tag_release)
     else
-        new=0
+        # This was a standard commit without a PR. Just exit. No tag.
+        echo "Regular commit. Not tagging for build."
+        exit 0
     fi
 fi
 
