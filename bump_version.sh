@@ -22,6 +22,7 @@ function tag_pr() {
     # get latest tag
     t=$(git describe --tags `git rev-list --tags --max-count=1`)
 
+    # The (>&2 ...) redirects to stderr since we capture stdout in the script later
     #(>&2 echo "tag_pr t: $t")
     #(>&2 echo "tar_pr pr: $pr")
     #(>&2 echo "tar_pr prefix: $tag_prefix")
@@ -34,6 +35,7 @@ function tag_pr() {
     else
         new="pr-$pr-1"
     fi
+
     echo $new
 }
 
@@ -57,13 +59,9 @@ function tag_release() {
         mv p2.json package.json
 
         git add package.json
-        (>&2 git commit -m "Version bump to $new. [skip ci]")
-        git tag $new
-
         # The (>&2 ...) redirects to stderr since we capture stdout in the script later
-        (>&2 git remote -v)
-        (>&2 git push)
-        (>&2 git push origin --tags)
+        (>&2 git commit -m "Version bump to $new. [skip ci]")
+
     fi
 
     (>&2 echo "tag_release new: $new")
@@ -109,7 +107,7 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     fi
 
 else
-    # If no PR, are we on master?
+    # If no PR, are we on master or main?
     if [ $branch == "master" -o $branch == "main" ]; then
         new=$(tag_release)
     else
@@ -118,4 +116,8 @@ else
 fi
 
 echo "new tag: $new"
-# post $new
+git tag $new
+
+git remote -v
+git push
+git push origin --tags
