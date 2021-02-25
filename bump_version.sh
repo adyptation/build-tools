@@ -81,6 +81,10 @@ release=0
 # get current branch
 branch=$(git rev-parse --abbrev-ref HEAD)
 
+# Make sure we are fully up to date with any recent tags/commits during build.
+git checkout $branch
+git pull origin $branch
+
 # get current commit hash for tag
 commit=$(git rev-parse HEAD)
 
@@ -101,6 +105,7 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
     # We're working with a PR
     if [ $branch == "master" ]; then
+        git checkout $branch
         new=$(tag_release)
         release=1
     else
