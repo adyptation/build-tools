@@ -17,7 +17,7 @@ grep 'Already exists' cloudfront.out > /dev/null
 r2=$?
 echo "result2 \$r2: $r2"
 
-if [[ $r2 -eq 0 && $r -eq 254 ]]; then
+if [ $r2 -eq 0 -a $r -eq 254 ]; then
     aws cloudfront list-distributions | jq -r ".DistributionList.Items[] | select (.Origins.Items[].Id | contains(\"$BUCKET\")) | .DomainName"
     aws cloudfront list-distributions | jq -r ".DistributionList.Items[] | select (.Origins.Items[].Id | contains(\"$BUCKET\")) | .DomainName" > url.out
     echo "Distribution already exists ($(cat url.out)). Continuing..."
