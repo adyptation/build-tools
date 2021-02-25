@@ -61,6 +61,7 @@ function tag_release() {
         git add package.json
         # The (>&2 ...) redirects to stderr since we capture stdout in the script later
         (>&2 git commit -m "Version bump to $new. [skip ci]")
+        (>&2 git push origin $branch)
 
     fi
 
@@ -97,6 +98,10 @@ if [ ! -f "semver" ]; then
     chmod +x semver
 fi
 
+ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+git config user.email "admin@adyptation.com"
+git config user.name "CircleCI Builder"
+
 if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
     # We're working with a PR
@@ -117,7 +122,5 @@ fi
 
 echo "new tag: $new"
 git tag $new
-
 git remote -v
-git push
 git push origin --tags
