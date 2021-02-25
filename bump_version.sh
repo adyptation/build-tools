@@ -98,7 +98,7 @@ if [ ! -f "semver" ]; then
     chmod +x semver
 fi
 
-ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+ssh-keyscan github.com >> ~/.ssh/known_hosts
 git config user.email "admin@adyptation.com"
 git config user.name "CircleCI Builder"
 
