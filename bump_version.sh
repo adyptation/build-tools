@@ -76,6 +76,7 @@ function tag_release() {
     echo $new
 }
 
+release=0
 
 # get current branch
 branch=$(git rev-parse --abbrev-ref HEAD)
@@ -101,6 +102,7 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     # We're working with a PR
     if [ $branch == "master" ]; then
         new=$(tag_release)
+        release=1
     else
         new=$(tag_pr)
     fi
@@ -109,6 +111,7 @@ else
     # If no PR, are we on master or main?
     if [ $branch == "master" -o $branch == "main" ]; then
         new=$(tag_release)
+        release=1
     else
         # This was a standard commit without a PR. Just exit. No tag.
         echo "Regular commit. Not tagging for build."
@@ -117,6 +120,12 @@ else
 fi
 
 echo "new tag: $new"
-git tag $new
+if [ $release -ne 0 ]; then
+    # Production release.
+    git tag -a -m "Release $new"
+else
+    git tag $new
+fi
+
 git remote -v
 git push origin --tags
