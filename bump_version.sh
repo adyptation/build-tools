@@ -10,9 +10,15 @@ function checkresult() { if [ $? = 0 ]; then echo TRUE; else echo FALSE; fi; }
 function tag_pr() {
     tag_prefix="pr-"
 
-    # Grab our PR number
-    pr=$(echo $CIRCLE_PULL_REQUEST | awk -F/ '{ print $7 }')
-
+    # Grab our PR number if provided
+    if [ ! -z $CIRCLE_PULL_REQUEST ]; then
+        # CIRCLE_PULL_REQUEST provides the full URL to the PR at Github
+        pr=$(echo $CIRCLE_PULL_REQUEST | awk -F/ '{ print $7 }')
+    else
+        # We can't increment a non-PR build.
+        echo "Non PR Build. No action."
+        exit 0
+    fi
     # get latest tag
     t=$(git describe --tags `git rev-list --tags --max-count=1`)
 
@@ -32,17 +38,8 @@ function tag_pr() {
 }
 
 function tag_release() {
-    # get latest tag
-    t=$(git describe --tags `git rev-list --tags --max-count=1`)
-
-    # if there are none, start tags at 0.0.0
-    if [ -z "$t" ]
-    then
-        log=$(git log --pretty=oneline)
-        t=0.0.0
-    else
-        log=$(git log $t..HEAD --pretty=oneline)
-    fi
+    # get current release version
+    t=$(jq -r .version package.json)
 
     # get commit logs and determine home to bump the version
     # supports #major, #minor, #patch (anything else will be 'minor')
@@ -52,6 +49,24 @@ function tag_release() {
         * ) new=$(./semver bump patch $t);;
     esac
 
+    # For our JavaScript/React projects we want to increment the version
+    # in the package.json and then commit the new version for the final build.
+    if [ -f package.json ]; then
+        (>&2 echo "Updating package.json")
+        jq '.version = "'"$new"'"' package.json > p2.json
+        mv p2.json package.json
+
+        git add package.json
+        (>&2 git commit -m "Version bump to $new. [skip ci]")
+        git tag $new
+
+        # The (>&2 ...) redirects to stderr since we capture stdout in the script later
+        (>&2 git remote -v)
+        (>&2 git push)
+        (>&2 git push origin --tags)
+    fi
+
+    (>&2 echo "tag_release new: $new")
     echo $new
 }
 
@@ -84,7 +99,7 @@ if [ ! -f "semver" ]; then
     chmod +x semver
 fi
 
-if [ ! -z $CIRCLE_PULL_REQUEST ]; then
+if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
     # We're working with a PR
     if [ $branch == "master" ]; then
@@ -93,6 +108,14 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then
         new=$(tag_pr)
     fi
 
-    echo "new tag: $new"
-    post $new
+else
+    # If no PR, are we on master?
+    if [ $branch == "master" -o $branch == "main" ]; then
+        new=$(tag_release)
+    else
+        new=0
+    fi
 fi
+
+echo "new tag: $new"
+# post $new
