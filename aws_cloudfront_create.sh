@@ -5,9 +5,15 @@ if [ "x$BUCKET" = "x" ]; then
     exit -1
 fi
 
-echo "CloudFront setup for $BUCKET"
+if [ "x$COMMIT_HASH" = "x" ]; then
+    export COMMIT_HASH=$(git rev-parse --short tags/$CIRCLE_TAG~0)
+fi
 
-sed -e "s/{{BUCKET}}/$BUCKET/g" aws-cloudfront-create.json > cloudfront.json
+echo "CloudFront setup for $BUCKET (commit $COMMIT_HASH)"
+
+sed -e "s/{{BUCKET}}/$BUCKET/g" aws-cloudfront-create.json | \
+    sed -e "s/{{COMMIT_HASH}}/$COMMIT_HASH/g" \
+    > cloudfront.json
 
 aws cloudfront create-distribution --distribution-config file://cloudfront.json > cloudfront.out 2>&1
 r=$?
