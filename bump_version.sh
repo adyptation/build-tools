@@ -43,14 +43,17 @@ function tag_release() {
     # get current release version
     t=$(jq -r .version package.json)
 
-    # get commit logs and determine home to bump the version
-    # supports #major, #minor, #patch (anything else will be 'minor')
-    case "$log" in
-        *#major* ) new=$(./semver bump major $t);;
-        *#minor* ) new=$(./semver bump minor $t);;
-        * ) new=$(./semver bump patch $t);;
-    esac
-
+    if [ ! -z CIRCLE_BUILD_NUM ]; then
+        new="$(semver get major $t).$(semver get minor $t).$CIRCLE_BUILD_NUM"
+    else 
+        # get commit logs and determine how to bump the version
+        # supports #major, #minor, #patch (anything else will be 'minor')
+        case "$log" in
+            *#major* ) new=$(./semver bump major $t);;
+            *#minor* ) new=$(./semver bump minor $t);;
+            * ) new=$(./semver bump patch $t);;
+        esac
+    fi 
     # For our JavaScript/React projects we want to increment the version
     # in the package.json and then commit the new version for the final build.
     if [ -f package.json ]; then
@@ -69,22 +72,6 @@ function tag_release() {
     echo $new
 }
 
-function post() {
-    # get repo name from git
-    remote=$(git config --get remote.origin.url)
-    repo=$(basename $remote .git)
-
-    # POST a new ref to repo via Github API
-    curl -s -X POST https://api.github.com/repos/$REPO_OWNER/$repo/git/refs \
-    -H "Authorization: token $GITHUB_TOKEN" \
-    -d @- << EOF
-{
-    "ref": "refs/tags/$1",
-    "sha": "$commit"
-}
-EOF
-
-}
 
 # get current branch
 branch=$(git rev-parse --abbrev-ref HEAD)
