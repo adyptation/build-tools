@@ -127,7 +127,7 @@ fi
 echo "new tag: $new"
 if [ $release -ne 0 ]; then
     # Production release.
-    git tag -a -m "Release $new"
+    git tag -a -m "Release $new" $new
 else
     git tag $new
 fi
