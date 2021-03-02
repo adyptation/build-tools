@@ -15,7 +15,7 @@ aws cloudfront list-distributions | \
 # Setup our ID for later use
 ID=$(jq -r .Id cf-list.json)
 
-if [ -z $ID ]; then
+if [ "x$ID" = "x" ]; then
     echo "No CloudFront Distribution found."
     exit 0
 fi
