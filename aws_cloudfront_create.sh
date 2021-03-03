@@ -5,6 +5,8 @@ if [ "x$BUCKET" = "x" ]; then
     exit -1
 fi
 
+COMMIT_HASH=$(git rev-parse --short tags/$CIRCLE_TAG~0)
+
 if [ "x$COMMIT_HASH" = "x" ]; then
     if [ "x$CIRCLE_TAG" = "x" -a "$CIRCLE_BRANCH" = "master" ]; then
         export COMMIT_HASH=$(git rev-parse --short $CIRCLE_BRANCH)
