@@ -24,9 +24,8 @@ aws cloudfront get-distribution-config --id $ID > cf-distribution.json
 
 # We need the ETag in order to delete the distribution
 ETAG=$(jq -r .ETag cf-distribution.json)
+echo "ETag: $ETAG"
 
-echo $ETAG
-exit
 # Set enabled to false, capture only DistributionConfig for deletion config
 jq '.DistributionConfig.Enabled = false' cf-distribution.json | \
     jq .DistributionConfig > cf-disable.json
