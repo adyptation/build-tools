@@ -6,7 +6,12 @@ if [ "x$BUCKET" = "x" ]; then
 fi
 
 if [ "x$COMMIT_HASH" = "x" ]; then
-    export COMMIT_HASH=$(git rev-parse --short tags/$CIRCLE_TAG~0)
+    if [ "x$CIRCLE_TAG" = "x" -a "$CIRCLE_BRANCH" = "master" ]; then
+        export COMMIT_HASH=$(git rev-parse --short $CIRCLE_BRANCH)
+    else
+        echo "Circle_tag: $CIRCLE_TAG"
+        export COMMIT_HASH=$(git rev-parse --short tags/$CIRCLE_TAG~0)
+    fi
 fi
 
 echo "CloudFront setup for $BUCKET (commit $COMMIT_HASH)"
