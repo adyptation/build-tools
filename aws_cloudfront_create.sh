@@ -40,4 +40,5 @@ if [ $r2 -eq 0 -a $r -eq 254 ]; then
 fi
 
 echo "Exiting ($(jq -r .Distribution.DomainName cloudfront.out))."
+jq -r .Distribution.DomainName cloudfront.out > url.out
 exit $r
