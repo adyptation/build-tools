@@ -29,9 +29,8 @@ function tag_pr() {
 
     if [[ $t == $tag_prefix* ]]; then
         # We already have a tag for this PR, so we increment
-        latest=$(git tag |d)
         num=$(echo $t | sed 's/.*\([0-9][0-9]*\)$/\1/')
-        num=$((num+1))
+        num=$(($num+1))
         new="pr-$pr-$num"
     else
         new="pr-$pr-1"
