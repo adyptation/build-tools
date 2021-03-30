@@ -4,7 +4,7 @@
 # This is designed to run in the CircleCI environment and expects CIRCLE_* environment
 # variables to be present
 #
-function beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
+function beginswith() { case "$2" in "$1"*) true;; *) false;; esac; }
 function checkresult() { if [ $? = 0 ]; then echo TRUE; else echo FALSE; fi; }
 
 function tag_pr() {
@@ -29,6 +29,7 @@ function tag_pr() {
 
     if [[ $t == $tag_prefix* ]]; then
         # We already have a tag for this PR, so we increment
+        latest=$(git tag |d)
         num=$(echo $t | sed 's/.*\([0-9][0-9]*\)$/\1/')
         num=$((num+1))
         new="pr-$pr-$num"
@@ -108,6 +109,9 @@ if [ ! -f "semver" ]; then
 fi
 
 
+beginswith "${branch}" "dependabot" 
+is_dependabot=$?
+
 if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
     # We're working with a PR
@@ -119,6 +123,10 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
         new=$(tag_pr)
     fi
 
+elif [ $is_dependabot ]; then
+    echo "Dependabot PR. No preview. Exiting cleanly."
+    exit 0
+    
 else
     # If no PR, are we on master or main?
     if [ $branch == "master" -o $branch == "main" ]; then
