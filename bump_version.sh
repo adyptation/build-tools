@@ -108,8 +108,15 @@ if [ ! -f "semver" ]; then
 fi
 
 
-beginswith "${branch}" "dependabot" 
-is_dependabot=$?
+# beginswith "dependabot" "${branch}" 
+# is_dependabot=$?
+# echo "Branch: $branch"
+# echo "is_dependabot: $is_dependabot"
+
+if [[ $branch == dependabot* ]]; then
+    echo "Dependabot PR. No preview. Exiting cleanly."
+    exit 0
+fi
 
 if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
     new="unknown"
@@ -122,10 +129,6 @@ if [ ! -z $CIRCLE_PULL_REQUEST ]; then # Found Circle PR
         new=$(tag_pr)
     fi
 
-elif [ $is_dependabot ]; then
-    echo "Dependabot PR. No preview. Exiting cleanly."
-    exit 0
-    
 else
     # If no PR, are we on master or main?
     if [ $branch == "master" -o $branch == "main" ]; then
