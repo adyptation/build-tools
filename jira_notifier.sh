@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# This needs to be changed and removed. Then used as an env var during builds.
-FORGE_CI_TOKEN=0WrPtH9rvJY3D2ZAXNWk
 
-FORGE_URL=https://ef6bf299-777e-41ca-847d-ee5743bd49ce.hello.atlassian-dev.net/x0/eyJjdHgiOiJhcmk6Y2xvdWQ6amlyYTo6c2l0ZS80OGJjMDJlYy03ZDIzLTQzMWYtYmZiOC04NTE4NjM5OTBlNTYiLCJleHQiOiJhcmk6Y2xvdWQ6ZWNvc3lzdGVtOjpleHRlbnNpb24vZWY2YmYyOTktNzc3ZS00MWNhLTg0N2QtZWU1NzQzYmQ0OWNlLzRjMDEzZDFlLTMwNWEtNGRkOC04NmQ4LTMyOGFjNzBiMGEyMi9zdGF0aWMvY2ktbm90aWZpZXItd2VidHJpZ2dlci1zeW5jIn0
-
+if [ "x$FORGE_URL" = "x" ]; then
+    echo "No FORGE_URL set. Exiting..."
+    exit 0 # Clean exit so build doesn't break.
+fi
 
 if [ "x$BRANCH" = "x" -o "x$URL" = "x" ]; then
     echo "Environment varibles missing. URL and BRANCH"
@@ -23,7 +23,7 @@ fi
 # Neither Markdown or straight HTML seem to work.
 # 2021-Feb-26 -seh
 #
-DATA="{ \"issue\": \"$ISSUE\", \"comment\": \"Preview available at: $URL \" }"
+DATA="{ \"issue\": \"$ISSUE\", \"comment\": \"Preview available at $URL\" }"
 echo $DATA
 
 
