@@ -2,7 +2,7 @@
 # Automatically add JIRA issue ID to the git commit message
 
 # Supported project keys
-PROJECT_KEYS=(REM DTX ALRT)
+PROJECT_KEYS=(ALRT REM DTX)
 
 # Commit message separator between issue number and commit message
 COMMIT_MESSAGE_SEPARATOR=": "
