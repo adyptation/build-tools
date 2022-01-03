@@ -53,21 +53,32 @@ execute() {
   fi
 }
 
-if [ ! -d ".git" ]; then
-    abort "No .git/ directory found. Please run inside a git repository."
-    exit 1
-fi
+# if [ ! -d ".git" ]; then
+#     abort "No .git/ directory found. Please run inside a git repository."
+#     exit 1
+# fi
 
 PWD=$(pwd)
-HOOKS_DIR=".git/hooks/"
+HOOKS_DIR="$HOME/.git/hooks/"
+
+if [ ! -d "$HOOKS_DIR" ]; then
+    ohai "Creating $HOOKS_DIR"
+    execute mkdir -p "$HOOKS_DIR"
+fi
 
 cd $HOOKS_DIR 2> /dev/null || abort "No .git/hooks/ directory. Did you clone and/or pull the repo?"
 
-curl -o commit-msg -s https://raw.githubusercontent.com/adyptation/build-tools/main/commit-msg
-/bin/chmod u+rwx commit-msg
+ohai "Installing commit-msg hook"
+execute curl -o commit-msg -s https://raw.githubusercontent.com/adyptation/build-tools/main/commit-msg
+execute /bin/chmod u+rwx commit-msg
 
-git config --global pull.rebase true
+execute git config --global core.hooksPath $HOOKS_DIR
 
-git config --global fetch.prune true
+ohai "Setting up global preferences"
+execute git config --global pull.rebase true
 
-git config --global diff.colorMoved zebra
+execute git config --global fetch.prune true
+
+execute git config --global diff.colorMoved zebra
+
+ohai "Done!"
